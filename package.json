@@ -1,0 +1,27 @@
+{
+  "name": "storj",
+  "version": "1.0.0",
+  "description": "recursively upload files to storj bucket",
+  "main": "index.js",
+  "author": "dcrystalj",
+  "license": "MIT",
+  "bin": "cli.js",
+  "scripts": {
+    "cli": "node ./cli",
+    "test": "jest",
+    "lint": "eslint . --fix"
+  },
+  "dependencies": {
+    "readdir-recursive": "^0.0.4",
+    "yargs": "^17.2.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.1.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-jest": "^25.2.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.1",
+    "jest": "^27.3.1"
+  }
+}
