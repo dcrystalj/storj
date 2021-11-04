@@ -1,5 +1,5 @@
 {
-  "name": "storj",
+  "name": "@dcrystalj/storj",
   "version": "1.0.0",
   "description": "recursively upload files to storj bucket",
   "main": "index.js",
@@ -9,6 +9,7 @@
   "scripts": {
     "cli": "node ./cli",
     "test": "jest",
+    "test:watch": "jest --watchAll",
     "lint": "eslint . --fix"
   },
   "dependencies": {
@@ -23,5 +24,8 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.1",
     "jest": "^27.3.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

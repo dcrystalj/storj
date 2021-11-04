@@ -14,11 +14,11 @@ class Args {
     return this.argv._[0].toString()
   }
 
-  get localFolder () {
+  get source () {
     return this.argv._[1].toString()
   }
 
-  get uploadFolder () {
+  get destination () {
     return this.argv._[2].toString()
   }
 
@@ -27,13 +27,13 @@ class Args {
   }
 
   shouldForwardToUplink = () => {
-    return this.argv._.length !== 3 || this.command !== 'cp' || !fs.lstatSync(this.localFolder).isDirectory()
+    return !((this.args.length === 3 && this.command === 'cp' && fs.lstatSync(this.source).isDirectory()) ||
+      (this.args.length === 2 && this.command === 'rm'))
   }
 
-  assertUploadFolderValid = () => {
-    if (!this.uploadFolder.startsWith('sj://')) {
-      console.error('Use upload format sj://...')
-      process.exit(1)
+  assertDestinationValid = () => {
+    if (!this.destination.startsWith('sj://')) {
+      throw new Error('Use upload format sj://...')
     }
   }
 

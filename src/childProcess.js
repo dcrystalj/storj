@@ -4,9 +4,18 @@ const childProcess = require('child_process')
  * Spawn new process and redirect its output to this process output.
  * Resolve promise on finished
  */
-const promisedSpawn = (command, args, showStdOut = true) => {
+const promisedSpawn = (chain, showStdOut = true) => {
   return new Promise((resolve, reject) => {
-    const spawn = childProcess.spawn(command, args)
+    let prevSpawn = null
+    let spawn = null
+    for (const [command, args] of chain) {
+      spawn = childProcess.spawn(command, args)
+      if (prevSpawn !== null) {
+        prevSpawn.stdout.pipe(spawn.stdin)
+      }
+      prevSpawn = spawn
+    }
+
     if (showStdOut) {
       spawn.stdout.pipe(process.stdout)
     }
@@ -22,5 +31,5 @@ const promisedSpawn = (command, args, showStdOut = true) => {
 }
 
 module.exports = {
-  promisedSpawn
+  promisedSpawn,
 }

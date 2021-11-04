@@ -9,13 +9,22 @@ const storj = new Storj(promisedSpawn)
 const Args = require('./src/args')
 const args = new Args(process.argv)
 
-if (args.shouldForwardToUplink()) {
-  storj.default(args.args).then(() => process.exit(0))
-} else {
-  args.assertUploadFolderValid()
-  if (process.env.DEBUG) {
-    console.log('[VALIDATION] Upload folder is valid')
+try {
+  if (args.shouldForwardToUplink()) {
+    storj.default(args.args).then(() => process.exit(0))
+  } else if (args.command === 'cp') {
+    args.assertDestinationValid()
+    if (process.env.DEBUG) {
+      console.log('[VALIDATION] Upload folder is valid')
+    }
+    const files = rread.fileSync(args.source)
+    storj.uploadRecursive(files, args.source, args.destination, args.prefixedOptions, args.forceReplace).then(() => process.exit(0))
+  } else if (args.command === 'rm') {
+    if (process.env.DEBUG) {
+      console.log('[DELETE] Starting to delete recursive')
+    }
+    storj.deleteRecursive(args.source, args.prefixedOptions).then(() => process.exit(0))
   }
-  const files = rread.fileSync(args.localFolder)
-  storj.uploadRecursive(files, args.localFolder, args.uploadFolder, args.prefixedOptions, args.forceReplace).then(() => process.exit(0))
+} catch (error) {
+  console.error(error)
 }

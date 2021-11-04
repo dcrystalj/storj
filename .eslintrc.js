@@ -3,15 +3,16 @@ module.exports = {
     commonjs: true,
     es2021: true,
     node: true,
-    'jest/globals': true
+    'jest/globals': true,
   },
   extends: [
-    'standard'
+    'standard',
   ],
   parserOptions: {
-    ecmaVersion: 13
+    ecmaVersion: 13,
   },
   rules: {
+    'comma-dangle': ['error', 'always-multiline'],
   },
-  plugins: ['jest']
+  plugins: ['jest'],
 }
