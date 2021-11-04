@@ -18,6 +18,8 @@ const promisedSpawn = (chain, showStdOut = true) => {
 
     if (showStdOut) {
       spawn.stdout.pipe(process.stdout)
+      spawn.stderr.pipe(process.stderr)
+      spawn.stdin.pipe(process.stdin)
     }
 
     let output = ''
