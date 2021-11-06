@@ -16,9 +16,15 @@ test('process force replace', () => {
 })
 
 test('options', () => {
-  const args = new Args(['/', 'yarn', 'cp', './', '/bucket/', '--arg1', '--arg2'])
+  const args = new Args(['/', 'yarn', 'cp', './', '/bucket/', '--arg1', '3', '--arg2'])
 
-  expect(args.options).toEqual(['arg1', 'arg2'])
+  expect(args.options).toEqual({ arg1: 3, arg2: true })
+})
+
+test('Flags', () => {
+  const args = new Args(['/', 'yarn', 'cp', './', '/bucket/', '--parallelism', '3', '--arg2', '--progress', '-h'])
+
+  expect(args.flags.cp).toEqual(['--parallelism', '3', '--progress', '-h'])
 })
 
 test.each([
@@ -31,10 +37,14 @@ test.each([
     expected: false,
   },
   {
+    argv: ['/', 'yarn', 'cp', './', 'a', '--parallelism', '4'],
+    expected: false,
+  },
+  {
     argv: ['/', 'yarn', 'rm', './'],
     expected: false,
   },
-])('not forward to uplink', ({ argv, expected }) => {
+])('forward to uplink', ({ argv, expected }) => {
   jest.mock('fs')
   const args = new Args(argv)
 

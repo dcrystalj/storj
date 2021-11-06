@@ -18,12 +18,12 @@ try {
       console.log('[VALIDATION] Upload folder is valid')
     }
     const files = rread.fileSync(args.source)
-    storj.uploadRecursive(files, args.source, args.destination, args.prefixedOptions, args.forceReplace).then(() => process.exit(0))
+    storj.uploadRecursive(files, args.source, args.destination, args.flags, args.forceReplace).then(() => process.exit(0))
   } else if (args.command === 'rm') {
     if (process.env.DEBUG) {
       console.log('[DELETE] Starting to delete recursive')
     }
-    storj.deleteRecursive(args.source, args.prefixedOptions).then(() => process.exit(0))
+    storj.deleteRecursive(args.source, args.flags).then(() => process.exit(0))
   }
 } catch (error) {
   console.error(error)

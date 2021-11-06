@@ -1,66 +1,76 @@
+const Args = require('../args')
 const Storj = require('../storj')
 
 test.each([
   {
     files: ['/a/b/c.mp4', '/a/b/d.txt'],
-    localFolder: './a/b',
-    uploadFolder: 'sj://bucket/',
-    replaceExisting: true,
-    spawnMock: jest.fn(() => Promise.resolve()),
-    options: ['--skip'],
-    expectedCalls: [
-      [[['uplink', ['cp', '/a/b/c.mp4', 'sj://bucket/b/c.mp4', '--skip']]]],
-      [[['uplink', ['cp', '/a/b/d.txt', 'sj://bucket/b/d.txt', '--skip']]]],
-    ],
+    spawn: {
+      chained: jest.fn(() => Promise.resolve()),
+      chainedWithOutput: jest.fn(() => Promise.resolve()),
+    },
+    args: new Args(['/', 'yarn', 'cp', './a/b', 'sj://bucket/', '-h', '--forceReplace']),
+    expectedCalls: {
+      chained: [
+        [[['uplink', ['cp', '/a/b/c.mp4', 'sj://bucket/b/c.mp4', '-h']]]],
+        [[['uplink', ['cp', '/a/b/d.txt', 'sj://bucket/b/d.txt', '-h']]]],
+      ],
+      chainedWithOutput: [],
+    },
   },
   {
     files: ['/a/b/c.mp4', '/a/b/d.txt'],
-    localFolder: './a/b',
-    uploadFolder: 'sj://bucket/',
-    replaceExisting: false,
-    options: ['--a', '--b'],
-    spawnMock: jest
-      .fn()
-      .mockImplementationOnce(() => Promise.resolve(''))
-      .mockImplementationOnce(() => Promise.resolve({}))
-      .mockImplementationOnce(() => Promise.resolve('BKT some /a/b/d.txt')),
-    expectedCalls: [
-      [[['uplink', ['ls', 'sj://bucket/b/c.mp4', '--a', '--b']]], false],
-      [[['uplink', ['cp', '/a/b/c.mp4', 'sj://bucket/b/c.mp4', '--a', '--b']]]],
-      [[['uplink', ['ls', 'sj://bucket/b/d.txt', '--a', '--b']]], false],
-    ],
+    args: new Args(['/', 'yarn', 'cp', './a/b', 'sj://bucket/', '--parallelism', '3', '-h']),
+    spawn: {
+      chained: jest
+        .fn()
+        .mockImplementationOnce(() => Promise.resolve({})),
+      chainedWithOutput: jest
+        .fn()
+        .mockImplementationOnce(() => Promise.resolve(''))
+        .mockImplementationOnce(() => Promise.resolve('BKT some /a/b/d.txt')),
+    },
+    expectedCalls: {
+      chained: [
+        [[['uplink', ['cp', '/a/b/c.mp4', 'sj://bucket/b/c.mp4', '--parallelism', '3', '-h']]]],
+      ],
+      chainedWithOutput: [
+        [[['uplink', ['ls', 'sj://bucket/b/c.mp4', '-h']]]],
+        [[['uplink', ['ls', 'sj://bucket/b/d.txt', '-h']]]],
+      ],
+    },
   },
 ])('upload recursive', async ({
   files,
-  localFolder,
-  uploadFolder,
-  options,
-  replaceExisting,
-  spawnMock,
+  args,
+  spawn,
   expectedCalls,
 }) => {
-  const storj = new Storj(spawnMock)
-  await storj.uploadRecursive(files, localFolder, uploadFolder, options, replaceExisting)
+  const storj = new Storj(spawn)
+  await storj.uploadRecursive(files, args.source, args.destination, args.flags, args.forceReplace)
 
-  expect(spawnMock.mock.calls).toEqual(expectedCalls)
+  expect(spawn.chained.mock.calls).toEqual(expectedCalls.chained)
+  expect(spawn.chainedWithOutput.mock.calls).toEqual(expectedCalls.chainedWithOutput)
 })
 
 test.each([
   {
-    folder: 'sj://test/',
-    prefixedOptions: ['--a'],
+    args: new Args(['/', 'yarn', 'rm', 'sj://test/']),
     lines: 'test/core/LICENSE\na/core/README.md\nb/core/lib/config/cache-contexts.js',
-    spawnMock: jest.fn(() => Promise.resolve()),
-    expectedCalls: [
-      [[['uplink', ['rm', 'sj://test/test/core/LICENSE', '--a']]]],
-      [[['uplink', ['rm', 'sj://test/a/core/README.md', '--a']]]],
-      [[['uplink', ['rm', 'sj://test/b/core/lib/config/cache-contexts.js', '--a']]]],
-    ],
+    spawn: {
+      chained: jest.fn(() => Promise.resolve()),
+    },
+    expectedCalls: {
+      chained: [
+        [[['uplink', ['rm', 'sj://test/test/core/LICENSE']]]],
+        [[['uplink', ['rm', 'sj://test/a/core/README.md']]]],
+        [[['uplink', ['rm', 'sj://test/b/core/lib/config/cache-contexts.js']]]],
+      ],
+    },
   },
-])('delete recursive', async ({ folder, prefixedOptions, lines, spawnMock, expectedCalls }) => {
-  const storj = new Storj(spawnMock)
+])('delete recursive', async ({ args, lines, spawn, expectedCalls }) => {
+  const storj = new Storj(spawn)
   storj.listRecursivePaths = jest.fn(() => Promise.resolve(lines))
-  await storj.deleteRecursive(folder, prefixedOptions)
+  await storj.deleteRecursive(args.source, args.flags)
 
-  expect(spawnMock.mock.calls).toEqual(expectedCalls)
+  expect(spawn.chained.mock.calls).toEqual(expectedCalls.chained)
 })
